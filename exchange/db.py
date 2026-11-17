@@ -18,9 +18,15 @@ CREATE TABLE IF NOT EXISTS assets (
     schema_version INTEGER NOT NULL, payload TEXT NOT NULL, digest TEXT NOT NULL,
     received_at TEXT NOT NULL, state TEXT NOT NULL DEFAULT 'active'
 );
+CREATE TABLE IF NOT EXISTS purposes (
+    name TEXT PRIMARY KEY, parent TEXT REFERENCES purposes(name)
+);
 CREATE TABLE IF NOT EXISTS grants (
     id TEXT PRIMARY KEY, source_id TEXT NOT NULL REFERENCES sources(id),
-    recipient TEXT NOT NULL, purpose TEXT NOT NULL, valid_until TEXT NOT NULL,
+    grantor TEXT NOT NULL, recipient TEXT NOT NULL,
+    purpose TEXT NOT NULL, valid_until TEXT NOT NULL,
+    parent_id TEXT REFERENCES grants(id),
+    delegable INTEGER NOT NULL DEFAULT 0,
     status TEXT NOT NULL DEFAULT 'active'
 );
 CREATE TABLE IF NOT EXISTS policies (
@@ -42,7 +48,7 @@ CREATE TABLE IF NOT EXISTS product_inputs (
 CREATE TABLE IF NOT EXISTS deliveries (
     id TEXT PRIMARY KEY, product_id TEXT NOT NULL, product_revision INTEGER NOT NULL,
     recipient TEXT NOT NULL, purpose TEXT NOT NULL, created_at TEXT NOT NULL,
-    input_digest TEXT NOT NULL, policy_revisions TEXT NOT NULL,
+    input_digest TEXT NOT NULL, policy_revisions TEXT NOT NULL, chain TEXT NOT NULL,
     FOREIGN KEY(product_id,product_revision) REFERENCES products(id,revision)
 );
 CREATE TABLE IF NOT EXISTS audit (
